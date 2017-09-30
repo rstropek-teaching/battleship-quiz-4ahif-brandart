@@ -19,12 +19,127 @@ $(() => {
   }
 
   $('#generate').click(() => {
-    // Here you have to add your code for building a random battleground.
-
-    // Tip: The next line of code demonstrates how you can select a table cell
-    // using coordinates, remove CSS classes and add CSS classes. 
-    $('td[data-r="1"][data-c="1"]').removeClass('water').addClass('ship');
-    $('td[data-r="2"][data-c="1"]').removeClass('water').addClass('ship');
-    $('td[data-r="3"][data-c="1"]').removeClass('water').addClass('ship');
+    //Adding 'Destroyer'
+    gen(2);
+    //Adding 'Submarine'
+    gen(3);
+    //Adding 'Cruiser'
+    gen(3);
+    //Adding 'Battleship'
+    gen(4);
+    //Adding 'Carrier'
+    gen(5);
   });
+
+  function generateCords(len){
+    var infos = {};
+    infos.len = len;
+    do{
+      infos.x = Math.floor(Math.random() * 10);
+      infos.y = Math.floor(Math.random() * 10);
+      if(Math.floor(Math.random() * 2) === 0){
+        infos.dir = 'vertical';
+        //I make it longer, to make the proving easier
+        if(infos.x === 0){
+          //I need this information for reseting the length
+          infos.extra = 1;
+          infos.len += 1;
+        }else if(infos.x + infos.len - 10 === 0){
+          infos.extra = -1;
+          infos.len += 1;
+          infos.x = -1;
+        }else{
+          infos.extra = 0;
+          infos.x -= 1;
+          infos.len += 2;
+        }
+      }else{
+        infos.dir = 'horicontal';
+        if(infos.y === 0){
+          infos.extra = 1;
+          infos.len += 1;
+        }else if(infos.y + infos.len - 10 === 0){
+          infos.extra = -1;
+          infos.len += 1;
+          infos.y = -1;
+        }else{
+          infos.extra = 0;
+          infos.y -= 1;
+          infos.len += 2;
+        }
+      }
+
+    }while(outOfBounds(infos) === false);
+    return infos;
+  }
+
+  function proveSet(x,y){
+    return $(`td[data-r="${x}"][data-c="${y}"]`).hasClass('ship');
+  }
+
+  function proveOverlaping(infos){
+    for(i = 0; i < infos.len; i++){
+      if(infos.dir === 'vertical'){
+        if(proveSet(infos.x + i, infos.y) || proveSet(infos.x + i, infos.y - 1) || proveSet(infos.x + i, infos.y + 1)){
+          return false;
+        }
+      }else{
+        if(proveSet(infos.x, infos.y + i) || proveSet(infos.x - 1, infos.y + i) || proveSet(infos.x + 1, infos.y + i)){
+          return false;
+        }
+      }
+    }
+  }
+
+  function outOfBounds(infos){
+    if(infos.dir === 'vertical'){
+      if(infos.len + infos.x - 10 > 0){
+        return false;
+      }
+    }else{
+      if(infos.len + infos.y - 10 > 0){
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function gen(len){
+    do{
+       infos = generateCords(len);
+    }while(proveOverlaping(infos) === false);
+
+    if(infos.dir === 'vertical'){
+      //now I reset the length to the original one
+      if(infos.extra === true){
+        infos.len -= 1;
+      }else if(infos.extra === -1){
+        infos.len -= 1;
+        infos.x += 1;
+      }else{
+        infos.x += 1;
+        infos.len -= 2;
+      }
+      
+    }else{
+      if(infos.extra === 1){
+        infos.len -= 1;
+      }else if(infos.extra === -1){
+        infos.len -= 1;
+        infos.y += 1;
+      }else{
+        infos.y += 1;
+        infos.len -= 2;
+      }
+      
+    }
+    for(i = 0; i < len; i++ ){
+      if(infos.dir === 'vertical'){
+        $(`td[data-r="${i + infos.x}"][data-c="${infos.y}"]`).removeClass('water').addClass('ship');
+      }else{
+        $(`td[data-r="${infos.x}"][data-c="${i + infos.y}"]`).removeClass('water').addClass('ship');
+      }
+    }
+  }
 });
+
