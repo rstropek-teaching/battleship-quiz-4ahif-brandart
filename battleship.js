@@ -43,6 +43,7 @@ $(() => {
         if(infos.x === 0){
           //I need this information for reseting the length
           infos.extra = 1;
+          // Prefer ++ over `+= 1`
           infos.len += 1;
         }else if(infos.x + infos.len - 10 === 0){
           infos.extra = -1;
@@ -69,7 +70,9 @@ $(() => {
         }
       }
 
-    }while(outOfBounds(infos) === false);
+    }
+    // Prefer `while(!outOfBounds(infos))` instead of `=== false`
+    while(outOfBounds(infos) === false);
     return infos;
   }
 
